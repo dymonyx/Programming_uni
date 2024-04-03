@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-
+from threading import Thread
+from sqlalchemy import *
+import sqlite3
 
 class Pizza(ABC):
     def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
@@ -39,7 +41,7 @@ class Pizza(ABC):
         if new_dough in ['yeast', 'yeast-free', 'whole-grain']:
             self._dough = new_dough
         else:
-            raise ValueError('Incorrect dough. Correct values are yeast, yeast-free, whole-grain.')
+            raise DoughException('Incorrect dough. Correct values are yeast, yeast-free, whole-grain.')
 
     @property
     def sauce(self):
@@ -58,7 +60,7 @@ class Pizza(ABC):
         if 'cheese' in new_ingredients:
             self._ingredients = new_ingredients
         else:
-            raise ValueError('Cheese have to be in ingredient list for pizza. Please add cheese.')
+            raise CheeseException('Cheese have to be in ingredient list for pizza. Please add cheese.')
 
     def __str__(self):
         return self._name
@@ -127,13 +129,23 @@ class PizzaSeafood(Pizza):
     def bake(self):
         return f'{self._name} will be baked in 30 minutes.'
 
+
+class CheeseException(BaseException):
+    """Класс исключения при отсутствии сыра в пицце"""
+
+
+class DoughException(BaseException):
+    """Класс исключения для несуществующих видов пицц"""
+
+
 def countdown(func):
     import time
-    def wrapped(*args, **kwargs): #зачем??
+    def wrapped(*args, **kwargs):  # зачем??
         start = time.time()
         func(*args, **kwargs)
         end = time.time()
-        print(f"Time taken to ordering is {round(end-start, 2)}sec.")
+        print(f"Time taken to ordering is {round(end - start, 2)}sec.")
+
     return wrapped
 
 
@@ -144,14 +156,36 @@ def checking_that_arg_is(predicate, error_message):
             if predicate(result):
                 raise ValueError(error_message)
             return result
+
         return wrapper
+
     return decorator
+
 
 def greater_than(value):
     def predicate(arg):
         return arg > value
+
     return predicate
 
+
+class CorrectNumb(Exception):
+    pass
+
+
+class NotExistProduct(Exception):
+    """Класс исключения для добавления несуществующего товара"""
+
+
+class OrderIsNotEmpty(Exception):
+    pass
+
+
+def counting(order_list):
+    if len(order_list) != 0:
+        raise OrderIsNotEmpty
+    else:
+        return
 
 
 class Terminal:
@@ -166,23 +200,38 @@ class Terminal:
         name = input('What is your name? ')
         print(*self._menu)
         action = input('What would you like to order? ')
+        while True:
+            try:
+                if action not in ['PizzaPepperoni', 'PizzaBarbeque', 'PizzaSeafood', "Q"]:
+                    raise NotExistProduct("Вы добавили несуществующий товар")
+            except NotExistProduct as e:
+                print(e)
+                action = input('What would you like to order? ')
+            else:
+                break
         order = Order(name)
         while action != 'Q':
             size = input("What size would you like to order? (30cm, 35cm, 40cm) ")
             if action == 'PizzaPepperoni':
-                if len(order.order_list) != 0:
+                try:
+                    counting(order.order_list)
+                except OrderIsNotEmpty:
                     pepperoni_pizzas = len([pizza for pizza in order.order_list if 'PizzaPepperoni' in str(pizza)])
                 else:
                     pepperoni_pizzas = 0
                 order.order_list.append(PizzaPepperoni(f"PizzaPepperoni_{pepperoni_pizzas + 1}_" + size, size))
             if action == 'PizzaBarbeque':
-                if len(order.order_list) != 0:
+                try:
+                    counting(order.order_list)
+                except OrderIsNotEmpty:
                     barbeque_pizzas = len([pizza for pizza in order.order_list if 'PizzaBarbeque' in str(pizza)])
                 else:
                     barbeque_pizzas = 0
                 order.order_list.append(PizzaBarbeque(f"PizzaBarbeque_{barbeque_pizzas + 1}_" + size, size))
             if action == 'PizzaSeafood':
-                if len(order.order_list) != 0:
+                try:
+                    counting(order.order_list)
+                except OrderIsNotEmpty:
                     seafood_pizzas = len([pizza for pizza in order.order_list if "PizzaSeafood" in str(pizza)])
                 else:
                     seafood_pizzas = 0
@@ -225,7 +274,8 @@ class Order:
     def order_list(self, new_order_list):
         self._order_list = new_order_list
 
-    @checking_that_arg_is(greater_than(10), "You are ordered too much..Please take a new order.")
+# как это обернуть в try так чтобы я могла использовать значения final_price и pizzas - SOLVE: убрать этот декоратор к черту, заменить на простую обработку исключений
+    @checking_that_arg_is(greater_than(40), "You are ordered too much..Please take a new order.")
     def get_price(self):
         prices = {'PizzaPepperoni': 10, 'PizzaBarbeque': 13, 'PizzaSeafood': 15}
         final_price = 0
@@ -247,6 +297,15 @@ class Order:
         return final_price
 
 
+
+
 if __name__ == '__main__':
     terminal = Terminal()
-    terminal.start_work()
+    #ВТОРОЙ ТЕРМИНАЛ
+    thread1 = Thread(target=terminal.start_work())
+    thread2 = Thread(target=terminal.start_work())
+    thread1.start()
+    thread2.start()
+"""для асинхронной многопоточности нужно реализовать использование стадий приготовления,
+например, пока печется одна пицца из заказа можно начать готовить другую
+"""
