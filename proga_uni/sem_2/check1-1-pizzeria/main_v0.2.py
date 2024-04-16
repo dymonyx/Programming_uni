@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from threading import Thread
 from sqlalchemy import *
 import sqlite3
+import time
+import numpy
 
 class Pizza(ABC):
     def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
@@ -60,14 +62,17 @@ class Pizza(ABC):
         if 'cheese' in new_ingredients:
             self._ingredients = new_ingredients
         else:
-            raise CheeseException('Cheese have to be in ingredient list for pizza. Please add cheese.')
+            raise CheeseException('Cheese have to be in ingredient list for pizza.')
 
     def __str__(self):
         return self._name
 
     def prepare(self):
+        time.sleep(3)
         print(f'kneaded {self._dough} dough.')
+        time.sleep(1)
         print(f'{self._sauce} id added.')
+        time.sleep(2)
         print(f"the following ingredients have been added: {','.join(self._products)}.")
 
     @abstractmethod
@@ -75,22 +80,25 @@ class Pizza(ABC):
         pass
 
     def cut(self):
+        time.sleep(3)
         return f'{self._name} is cut.'
 
 
 class PackingDeliveryMixin:
 
     def pack(self):
+        time.sleep(3)
         return f'{self._name} is packed.'
 
     def deliver(self):
+        time.sleep(3)
         return f'{self._name} is delivering.'
 
 
 class PizzaPepperoni(Pizza, PackingDeliveryMixin):
     def __init__(self, name='Pepperoni', size='', dough='yeast', sauce='tomato',
                  products=['cheese', 'pepperoni', 'italian_herbs']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
@@ -98,14 +106,16 @@ class PizzaPepperoni(Pizza, PackingDeliveryMixin):
         self._products = products
 
     def bake(self):
-        return f'{self._name} will be baked in 20 minutes.'
+        print(f'{self._name} will be baked in 20 minutes.')
+        time.sleep(1)
+        return (f'{self._name} is baked.')
 
 
 class PizzaBarbeque(Pizza, PackingDeliveryMixin):
     def __init__(self, name='Barbeque', size='', dough='yeast-free', sauce='tomato',
                  products=['cheese', 'sauce barbeque', 'bacon', 'tomatoes', 'eggplant', 'champignons', 'sweet onions',
                            'pickles', 'parsley']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
@@ -113,13 +123,15 @@ class PizzaBarbeque(Pizza, PackingDeliveryMixin):
         self._products = products
 
     def bake(self):
-        return f'{self._name} will be baked in 25 minutes.'
+        print(f'{self._name} will be baked in 25 minutes.')
+        time.sleep(2)
+        return (f'{self._name} is baked.')
 
 
 class PizzaSeafood(Pizza):
     def __init__(self, name='Seafood', size='', dough='whole-grain', sauce='cream',
                  products=['cheese', 'calamari', 'shrimp', 'mussels', 'octopus', 'tomatoes', 'red pepper']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
@@ -127,7 +139,10 @@ class PizzaSeafood(Pizza):
         self._products = products
 
     def bake(self):
-        return f'{self._name} will be baked in 30 minutes.'
+        print(f'{self._name} will be baked in 30 minutes.')
+        time.sleep(3)
+        return (f'{self._name} is baked.')
+
 
 
 class CheeseException(BaseException):
@@ -147,26 +162,6 @@ def countdown(func):
         print(f"Time taken to ordering is {round(end - start, 2)}sec.")
 
     return wrapped
-
-
-def checking_that_arg_is(predicate, error_message):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            if predicate(result):
-                raise ValueError(error_message)
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-def greater_than(value):
-    def predicate(arg):
-        return arg > value
-
-    return predicate
 
 
 class CorrectNumb(Exception):
@@ -211,33 +206,62 @@ class Terminal:
                 break
         order = Order(name)
         while action != 'Q':
-            size = input("What size would you like to order? (30cm, 35cm, 40cm) ")
-            if action == 'PizzaPepperoni':
+            pizzas_ordering = []
+            size = ''
+            while True:
+                new_size = input("What size would you like to order? (30cm, 35cm, 40cm) ")
                 try:
-                    counting(order.order_list)
-                except OrderIsNotEmpty:
-                    pepperoni_pizzas = len([pizza for pizza in order.order_list if 'PizzaPepperoni' in str(pizza)])
-                else:
-                    pepperoni_pizzas = 0
-                order.order_list.append(PizzaPepperoni(f"PizzaPepperoni_{pepperoni_pizzas + 1}_" + size, size))
-            if action == 'PizzaBarbeque':
-                try:
-                    counting(order.order_list)
-                except OrderIsNotEmpty:
-                    barbeque_pizzas = len([pizza for pizza in order.order_list if 'PizzaBarbeque' in str(pizza)])
-                else:
-                    barbeque_pizzas = 0
-                order.order_list.append(PizzaBarbeque(f"PizzaBarbeque_{barbeque_pizzas + 1}_" + size, size))
-            if action == 'PizzaSeafood':
-                try:
-                    counting(order.order_list)
-                except OrderIsNotEmpty:
-                    seafood_pizzas = len([pizza for pizza in order.order_list if "PizzaSeafood" in str(pizza)])
-                else:
-                    seafood_pizzas = 0
-                order.order_list.append(PizzaSeafood(f"PizzaSeafood_{seafood_pizzas + 1}_" + size, size))
-            action = input('Do you want to add more pizzas? yes/no: ')
-            if action == 'yes':
+                    if new_size in ['30cm', '35cm', '40cm']:
+                        size = new_size
+                        break
+                    else:
+                        raise ValueError('Incorrect size of pizza. Correct values are 30cm, 35cm, 40cm.')
+                except ValueError as e:
+                    print(e)
+            try:
+                counting(order.order_list)
+            except OrderIsNotEmpty:
+                amount_pizzas = len(order.order_list)
+            else:
+                amount_pizzas = 0
+            name_pizza = f'{action}_{amount_pizzas + 1}_' + size
+            if action == "PizzaPepperoni":
+                pizzas_ordering.append(PizzaPepperoni(name_pizza, size))
+            elif action == "PizzaBarbeque":
+                pizzas_ordering.append(PizzaBarbeque(name_pizza, size))
+            else:
+                pizzas_ordering.append(PizzaSeafood(name_pizza, size))
+            ans_products = input("Would you like to change some ingredients? (Y/N) ")
+            if ans_products == 'Y':
+                now_ingredients = numpy.copy(pizzas_ordering[amount_pizzas].ingredients)
+                new_ingredients = pizzas_ordering[amount_pizzas].ingredients
+                del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                while True:
+                    while True:
+                        if del_ingredients == ["Q"]:
+                            break
+                        if all([ingredient in now_ingredients for ingredient in del_ingredients]):
+                            break
+                        else:
+                            print(f'Incorrect ingredients. Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ')
+                            del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                    if del_ingredients == ["Q"]:
+                        pizzas_ordering[amount_pizzas].ingredients = now_ingredients
+                        break
+                    try:
+                        for i in del_ingredients:
+                            new_ingredients.remove(i)
+                        pizzas_ordering[amount_pizzas].ingredients = new_ingredients
+                    except CheeseException as e:
+                        pizzas_ordering[amount_pizzas].ingredients = now_ingredients
+                        new_ingredients = numpy.copy(now_ingredients).tolist()
+                        print(e)
+                        del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                    else:
+                        break
+            order.order_list.append(pizzas_ordering[amount_pizzas])
+            action = input('Do you want to add more pizzas? (Y/N): ')
+            if action == 'Y':
                 print(*self._menu)
                 action = input('What would you like to order? ')
             else:
@@ -275,7 +299,7 @@ class Order:
         self._order_list = new_order_list
 
 # как это обернуть в try так чтобы я могла использовать значения final_price и pizzas - SOLVE: убрать этот декоратор к черту, заменить на простую обработку исключений
-    @checking_that_arg_is(greater_than(40), "You are ordered too much..Please take a new order.")
+
     def get_price(self):
         prices = {'PizzaPepperoni': 10, 'PizzaBarbeque': 13, 'PizzaSeafood': 15}
         final_price = 0
@@ -301,11 +325,14 @@ class Order:
 
 if __name__ == '__main__':
     terminal = Terminal()
+    terminal.start_work()
     #ВТОРОЙ ТЕРМИНАЛ
-    thread1 = Thread(target=terminal.start_work())
+''' thread1 = Thread(target=terminal.start_work())
     thread2 = Thread(target=terminal.start_work())
     thread1.start()
-    thread2.start()
+    thread2.start()'''
 """для асинхронной многопоточности нужно реализовать использование стадий приготовления,
 например, пока печется одна пицца из заказа можно начать готовить другую
 """
+#если не первый атрибут пустой, то сначала видимо заполняется он (эт про ошибку с size)
+#сеттер с property вызывается видимо как обычный атрибут (а в чем смысл??????)
