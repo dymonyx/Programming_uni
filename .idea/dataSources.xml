@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:sqlite:C:\Users\JK_RUSYA\PycharmProjects\pythonProject\proga_uni\sem_2\lab_3\music.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="myDBase" uuid="cd8a74f8-d2ea-46c4-929f-fd51d36a6112">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\JK_RUSYA\PycharmProjects\pythonProject\proga_uni\sem_2\check1-1-pizzeria\myDBase.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

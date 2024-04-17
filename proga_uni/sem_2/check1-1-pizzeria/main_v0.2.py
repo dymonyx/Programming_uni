@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from threading import Thread
 from sqlalchemy import *
-import sqlite3
-import time
 import numpy
+import asyncio
+from sqlalchemy.orm import *
+from datetime import datetime
 
 class Pizza(ABC):
     def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
@@ -67,32 +68,32 @@ class Pizza(ABC):
     def __str__(self):
         return self._name
 
-    def prepare(self):
-        time.sleep(3)
+    async def prepare(self):
+        await asyncio.sleep(3)
         print(f'kneaded {self._dough} dough.')
-        time.sleep(1)
-        print(f'{self._sauce} id added.')
-        time.sleep(2)
+        await asyncio.sleep(1)
+        print(f'{self._sauce} sauce is added.')
+        await asyncio.sleep(2)
         print(f"the following ingredients have been added: {','.join(self._products)}.")
 
     @abstractmethod
     def bake(self):
         pass
 
-    def cut(self):
-        time.sleep(3)
-        return f'{self._name} is cut.'
+    async def cut(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is cut.')
 
 
 class PackingDeliveryMixin:
 
-    def pack(self):
-        time.sleep(3)
-        return f'{self._name} is packed.'
+    async def pack(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is packed.')
 
-    def deliver(self):
-        time.sleep(3)
-        return f'{self._name} is delivering.'
+    async def deliver(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is delivering.')
 
 
 class PizzaPepperoni(Pizza, PackingDeliveryMixin):
@@ -105,10 +106,10 @@ class PizzaPepperoni(Pizza, PackingDeliveryMixin):
         self._sauce = sauce
         self._products = products
 
-    def bake(self):
+    async def bake(self):
         print(f'{self._name} will be baked in 20 minutes.')
-        time.sleep(1)
-        return (f'{self._name} is baked.')
+        await asyncio.sleep(1)
+        print(f'{self._name} is baked.')
 
 
 class PizzaBarbeque(Pizza, PackingDeliveryMixin):
@@ -122,10 +123,10 @@ class PizzaBarbeque(Pizza, PackingDeliveryMixin):
         self._sauce = sauce
         self._products = products
 
-    def bake(self):
+    async def bake(self):
         print(f'{self._name} will be baked in 25 minutes.')
-        time.sleep(2)
-        return (f'{self._name} is baked.')
+        await asyncio.sleep(2)
+        print(f'{self._name} is baked.')
 
 
 class PizzaSeafood(Pizza):
@@ -138,11 +139,10 @@ class PizzaSeafood(Pizza):
         self._sauce = sauce
         self._products = products
 
-    def bake(self):
+    async def bake(self):
         print(f'{self._name} will be baked in 30 minutes.')
-        time.sleep(3)
-        return (f'{self._name} is baked.')
-
+        await asyncio.sleep(3)
+        print(f'{self._name} is baked.')
 
 
 class CheeseException(BaseException):
@@ -182,6 +182,19 @@ def counting(order_list):
     else:
         return
 
+engine = create_engine('sqlite:///myDBase.db')
+
+meta = MetaData()
+
+orders_table = Table('orders', meta,
+    Column('id', Integer, primary_key=True),
+    Column('name', String),
+    Column('price', String),
+    Column('order_description', String),
+    Column('date', String)
+)
+
+meta.create_all(engine)
 
 class Terminal:
     def __init__(self, menu=['PizzaPepperoni', 'PizzaBarbeque', 'PizzaSeafood']):
@@ -205,8 +218,8 @@ class Terminal:
             else:
                 break
         order = Order(name)
+        pizzas_ordering = []
         while action != 'Q':
-            pizzas_ordering = []
             size = ''
             while True:
                 new_size = input("What size would you like to order? (30cm, 35cm, 40cm) ")
@@ -235,7 +248,9 @@ class Terminal:
             if ans_products == 'Y':
                 now_ingredients = numpy.copy(pizzas_ordering[amount_pizzas].ingredients)
                 new_ingredients = pizzas_ordering[amount_pizzas].ingredients
-                del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                del_ingredients = list(input(
+                    f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(
+                    ' ,'))
                 while True:
                     while True:
                         if del_ingredients == ["Q"]:
@@ -243,8 +258,11 @@ class Terminal:
                         if all([ingredient in now_ingredients for ingredient in del_ingredients]):
                             break
                         else:
-                            print(f'Incorrect ingredients. Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ')
-                            del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                            print(
+                                f'Incorrect ingredients. Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ')
+                            del_ingredients = list(input(
+                                f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(
+                                ' ,'))
                     if del_ingredients == ["Q"]:
                         pizzas_ordering[amount_pizzas].ingredients = now_ingredients
                         break
@@ -256,7 +274,9 @@ class Terminal:
                         pizzas_ordering[amount_pizzas].ingredients = now_ingredients
                         new_ingredients = numpy.copy(now_ingredients).tolist()
                         print(e)
-                        del_ingredients = list(input(f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(' ,'))
+                        del_ingredients = list(input(
+                            f'Now there are {pizzas_ordering[amount_pizzas].ingredients} products. Choose one or some ingredients to change with " ," ').split(
+                            ' ,'))
                     else:
                         break
             order.order_list.append(pizzas_ordering[amount_pizzas])
@@ -269,8 +289,29 @@ class Terminal:
         if len(order.order_list) != 0:
             answer = input('Do you confirm your order? yes/no: ')
             if answer == 'yes':
-                order.get_price()
+                final_price = order.get_price()
+                pizzas = [str(pizza) for pizza in order._order_list]
+                print(f"Your order contains: {' ,'.join(pizzas)} and final price is {final_price}")
                 print('Thanks for ordering! See you next time!')
+                current_datetime = datetime.now()
+                # Преобразование текущей даты и времени в строку
+                current_datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                new_order = {'name': name, 'price': final_price, 'order_description': ' ,'.join(pizzas), 'date': current_datetime_str}
+                session.execute(orders_table.insert(), new_order)
+                session.commit()
+
+                async def preparing_pizza(pizza):
+                    await pizza.prepare()
+                    await pizza.bake()
+                    await pizza.cut()
+                async def doing_order():
+                    pizzas = order.order_list
+                    tasks = [asyncio.create_task(preparing_pizza(pizza)) for pizza in pizzas]
+                    await asyncio.gather(*tasks)
+
+
+                asyncio.run(doing_order())
+                print('Your order is ready!')
             else:
                 print('See you next time!')
         else:
@@ -298,7 +339,7 @@ class Order:
     def order_list(self, new_order_list):
         self._order_list = new_order_list
 
-# как это обернуть в try так чтобы я могла использовать значения final_price и pizzas - SOLVE: убрать этот декоратор к черту, заменить на простую обработку исключений
+    # как это обернуть в try так чтобы я могла использовать значения final_price и pizzas - SOLVE: убрать этот декоратор к черту, заменить на простую обработку исключений
 
     def get_price(self):
         prices = {'PizzaPepperoni': 10, 'PizzaBarbeque': 13, 'PizzaSeafood': 15}
@@ -316,23 +357,27 @@ class Order:
                 final_price += int(price * 1.3)
             else:
                 final_price += int(price * 1.5)
-        pizzas = [str(pizza) for pizza in self._order_list]
-        print(f"Your order contains: {','.join(pizzas)} and final price is {final_price}")
         return final_price
 
 
-
-
 if __name__ == '__main__':
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
     terminal = Terminal()
-    terminal.start_work()
-    #ВТОРОЙ ТЕРМИНАЛ
-''' thread1 = Thread(target=terminal.start_work())
-    thread2 = Thread(target=terminal.start_work())
-    thread1.start()
-    thread2.start()'''
-"""для асинхронной многопоточности нужно реализовать использование стадий приготовления,
-например, пока печется одна пицца из заказа можно начать готовить другую
-"""
-#если не первый атрибут пустой, то сначала видимо заполняется он (эт про ошибку с size)
-#сеттер с property вызывается видимо как обычный атрибут (а в чем смысл??????  )
+    # ВТОРОЙ ТЕРМИНАЛ - вторичный поток
+    terminal1 = Thread(target=terminal.start_work())
+#    terminal2 = Thread(target=terminal.start_work())
+    terminal1.start()
+#    terminal2.start()
+    terminal1.join()
+#    terminal2.join()
+
+    orders = session.execute(orders_table.select()).fetchall()
+    for order in orders:
+        print(f'name: {order.name}, price: {order.price}, order_contained: {order.order_description}, date: {order.date}')
+
+    session.close()
+
+# если не первый атрибут пустой, то сначала видимо заполняется он (эт про ошибку с size)
+# сеттер с property вызывается видимо как обычный атрибут (а в чем смысл??????  )
