@@ -59,6 +59,7 @@ def hide_rectangle():
     result_label.grid_remove()
 
 
+
 def show_operations():
     hide_rectangle()
     result_label.grid(row=3, column=1, pady=5, sticky=W)
@@ -66,6 +67,7 @@ def show_operations():
     minus_btn.grid(row=0, column=3, sticky=W, padx=10)
     multiplication_btn.grid(row=1, column=2, sticky=W, padx=10)
     division_btn.grid(row=1, column=3, sticky=W, padx=10)
+
 
 
 def show_information():
@@ -76,6 +78,7 @@ def show_information():
 
 def open_warning():
     showwarning(title="Предупреждение", message="Your number should be positive")
+    result.set("")
 
 
 def finish():
@@ -162,10 +165,6 @@ if __name__ == "__main__":
     tk.option_add("*tearOff", FALSE)
     tk.title('Graphic calculator')
     tk.geometry('450x650+320+240')
-
-    position = {"padx": 6, "pady": 6, "anchor": NW}
-    activities = ["Calculator", "Rectangle"]
-    selected_activity = StringVar(value=activities[0])
 
     activity_var = IntVar()
     activity_var.set(False)
