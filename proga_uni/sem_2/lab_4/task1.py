@@ -150,7 +150,7 @@ def square_perimeter():
 
             pic = (Canvas(width=200, height=100, bg='white'))
             pic.grid(row=8, column=1, columnspan=2)
-            pic.create_rectangle(10, 10, 10*num1, 10*num2)
+            pic.create_rectangle(10, 10, 10*num1, 10*num2, fill="black", width=5, outline="purple")
 
 
     except ValueError:
