@@ -19,9 +19,11 @@ class Terminal:
     def get_menu(self):
         return ','.join(self._menu)
 
+    def clearing_order_list(self):
+        pass
+
     def start_work(self, name, order_details):
         order = Order(name)
-        order_list = []
 
         for detail in order_details:
             action = detail['action']
@@ -33,8 +35,9 @@ class Terminal:
 
             if ingredients_to_change:
                 self.change_ingredients(pizza, ingredients_to_change)
-
+            print(pizza)
             order.order_list.append(pizza)
+            print(order.order_list)
 
         if len(order.order_list) != 0:
 
@@ -52,15 +55,15 @@ class Terminal:
             session.add(new_order)  # Добавляем объект Order в сессию
             session.commit()  # Фиксируем изменения в базе данных
             session.close()
-
             asyncio.run(self.prepare_order(order.order_list))
         else:
             print('Order is empty.')
 
+
     def create_pizza(self, action, name_pizza, size):
-        if action == "PizzaPepperoni":
+        if action == "Pepperoni":
             return PizzaPepperoni(name_pizza, size)
-        elif action == "PizzaBarbeque":
+        elif action == "Barbeque":
             return PizzaBarbeque(name_pizza, size)
         else:
             return PizzaSeafood(name_pizza, size)
@@ -84,7 +87,11 @@ class Terminal:
             await pizza.bake()
             await pizza.cut()
         tasks = [asyncio.create_task(prepare_pizza(pizza)) for pizza in pizzas]
+        print(pizzas)
         await asyncio.gather(*tasks)
+
+
+
 
 def on_order(name, order_details):
     terminal = Terminal()
@@ -103,6 +110,5 @@ if __name__ == '__main__':
     tk.mainloop()
 
     # Display all orders
-
 
     session.close()

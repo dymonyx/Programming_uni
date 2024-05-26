@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from exceptions import CheeseException, DoughException
-
+# возможно сюда нужно будет импортировать исключения
 
 class Pizza(ABC):
     def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
@@ -71,7 +71,7 @@ class Pizza(ABC):
         await asyncio.sleep(1)
         print(f'{self._sauce} sauce is added.')
         await asyncio.sleep(2)
-        print(f"the following ingredients have been added: {','.join(self._products)}.")
+        print(f"the following ingredients have been added: {', '.join(self._products)}.")
 
     @abstractmethod
     def bake(self):
@@ -108,6 +108,8 @@ class PizzaPepperoni(Pizza, PackingDeliveryMixin):
         await asyncio.sleep(1)
         print(f'{self._name} is baked.')
 
+    def __repr__(self):
+        return "PizzaPepperoni"
 
 
 class PizzaBarbeque(Pizza, PackingDeliveryMixin):
@@ -126,6 +128,8 @@ class PizzaBarbeque(Pizza, PackingDeliveryMixin):
         await asyncio.sleep(2)
         print(f'{self._name} is baked.')
 
+    def __repr__(self):
+        return "PizzaBarbeque"
 
 
 class PizzaSeafood(Pizza):
@@ -143,3 +147,7 @@ class PizzaSeafood(Pizza):
         await asyncio.sleep(3)
         print(f'{self._name} is baked.')
 
+    def __repr__(self):
+        return "PizzaSeafood"
+
+# repr можно убрать если я починю названия через str материнского класса

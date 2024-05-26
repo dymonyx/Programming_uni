@@ -276,10 +276,13 @@ class PizzaApp:
 
         if messagebox.askyesno("Confirm", "Do you confirm your order?"):
             self.on_order_callback(name, self.order_details)
-            messagebox.showinfo("Order", "Your order is ready!")
+            self.order_ready_message()
         else:
             messagebox.showinfo("Order", "Order cancelled.")
 
+    def order_ready_message(self):
+        messagebox.showinfo("Order", "Your order is ready!")
+        self.root.quit()  # Закрытие приложения
     def show_information(self):
         information = ["Author - Agonek", "Language - Python", "Day of release - 27/04/24"]
         str_info = "\n".join(information)
