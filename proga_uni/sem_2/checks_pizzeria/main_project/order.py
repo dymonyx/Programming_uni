@@ -36,8 +36,6 @@ class Order:
                 final_price += int(price * 1.5)
         pizzas = [str(pizza) for pizza in self._order_list]
         print(f"Your order contains: {','.join(pizzas)} and final price is {final_price}")
+        return final_price
 
 
-if __name__ == '__main__':
-    terminal = Terminal()
-    terminal.start_work()

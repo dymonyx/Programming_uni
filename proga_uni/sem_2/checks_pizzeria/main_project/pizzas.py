@@ -1,5 +1,10 @@
-class Pizza:
-    def __init__(self, name='', size='', dough='yeast', sauce='', ingredients=['cheese']):
+import asyncio
+from abc import ABC, abstractmethod
+from exceptions import CheeseException, DoughException
+
+
+class Pizza(ABC):
+    def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
         self._name = name
         self._size = size
         self._dough = dough
@@ -36,7 +41,7 @@ class Pizza:
         if new_dough in ['yeast', 'yeast-free', 'whole-grain']:
             self._dough = new_dough
         else:
-            raise ValueError('Incorrect dough. Correct values are yeast, yeast-free, whole-grain.')
+            raise DoughException('Incorrect dough. Correct values are yeast, yeast-free, whole-grain.')
 
     @property
     def sauce(self):
@@ -55,55 +60,86 @@ class Pizza:
         if 'cheese' in new_ingredients:
             self._ingredients = new_ingredients
         else:
-            raise ValueError('Cheese have to be in ingredient list for pizza. Please add cheese.')
+            raise CheeseException('Cheese have to be in ingredient list for pizza.')
 
     def __str__(self):
         return self._name
 
-    def prepare(self):
+    async def prepare(self):
+        await asyncio.sleep(3)
         print(f'kneaded {self._dough} dough.')
-        print(f'{self._sauce} id added.')
+        await asyncio.sleep(1)
+        print(f'{self._sauce} sauce is added.')
+        await asyncio.sleep(2)
         print(f"the following ingredients have been added: {','.join(self._products)}.")
 
+    @abstractmethod
     def bake(self):
-        return f'{self._name} is baked.'
+        pass
 
-    def cut(self):
-        return f'{self._name} is cut.'
-
-    def pack(self):
-        return f'{self._name} is packed.'
+    async def cut(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is cut.')
 
 
-class PizzaPepperoni(Pizza):
+class PackingDeliveryMixin:
+
+    async def pack(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is packed.')
+
+    async def deliver(self):
+        await asyncio.sleep(3)
+        print(f'{self._name} is delivering.')
+
+
+class PizzaPepperoni(Pizza, PackingDeliveryMixin):
     def __init__(self, name='Pepperoni', size='', dough='yeast', sauce='tomato',
                  products=['cheese', 'pepperoni', 'italian_herbs']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
         self._sauce = sauce
         self._products = products
 
+    async def bake(self):
+        print(f'{self._name} will be baked in 20 minutes.')
+        await asyncio.sleep(1)
+        print(f'{self._name} is baked.')
 
-class PizzaBarbeque(Pizza):
+
+
+class PizzaBarbeque(Pizza, PackingDeliveryMixin):
     def __init__(self, name='Barbeque', size='', dough='yeast-free', sauce='tomato',
                  products=['cheese', 'sauce barbeque', 'bacon', 'tomatoes', 'eggplant', 'champignons', 'sweet onions',
                            'pickles', 'parsley']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
         self._sauce = sauce
         self._products = products
+
+    async def bake(self):
+        print(f'{self._name} will be baked in 25 minutes.')
+        await asyncio.sleep(2)
+        print(f'{self._name} is baked.')
+
 
 
 class PizzaSeafood(Pizza):
     def __init__(self, name='Seafood', size='', dough='whole-grain', sauce='cream',
                  products=['cheese', 'calamari', 'shrimp', 'mussels', 'octopus', 'tomatoes', 'red pepper']):
-        super().__init__(self)
+        super().__init__(name, size, dough, sauce, products)
         self._name = name
         self._size = self._check_size(size)
         self._dough = dough
         self._sauce = sauce
         self._products = products
+
+    async def bake(self):
+        print(f'{self._name} will be baked in 30 minutes.')
+        await asyncio.sleep(3)
+        print(f'{self._name} is baked.')
+
