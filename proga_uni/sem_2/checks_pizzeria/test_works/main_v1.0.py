@@ -1,6 +1,3 @@
-from tkinter import *
-from tkinter import ttk
-from tkinter.messagebox import showinfo, showwarning
 from abc import ABC, abstractmethod
 from threading import Thread
 from sqlalchemy import *
@@ -8,6 +5,7 @@ import numpy
 import asyncio
 from sqlalchemy.orm import *
 from datetime import datetime
+
 
 class Pizza(ABC):
     def __init__(self, name='', size='', dough='', sauce='', ingredients=['cheese']):
@@ -185,19 +183,21 @@ def counting(order_list):
     else:
         return
 
+
 engine = create_engine('sqlite:///myDBase.db')
 
 meta = MetaData()
 
 orders_table = Table('orders', meta,
-    Column('id', Integer, primary_key=True),
-    Column('name', String),
-    Column('price', String),
-    Column('order_description', String),
-    Column('date', String)
-)
+                     Column('id', Integer, primary_key=True),
+                     Column('name', String),
+                     Column('price', String),
+                     Column('order_description', String),
+                     Column('date', String)
+                     )
 
 meta.create_all(engine)
+
 
 class Terminal:
     def __init__(self, menu=['PizzaPepperoni', 'PizzaBarbeque', 'PizzaSeafood']):
@@ -299,7 +299,8 @@ class Terminal:
                 current_datetime = datetime.now()
                 # Преобразование текущей даты и времени в строку
                 current_datetime_str = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
-                new_order = {'name': name, 'price': final_price, 'order_description': ' ,'.join(pizzas), 'date': current_datetime_str}
+                new_order = {'name': name, 'price': final_price, 'order_description': ' ,'.join(pizzas),
+                             'date': current_datetime_str}
                 session.execute(orders_table.insert(), new_order)
                 session.commit()
 
@@ -307,11 +308,12 @@ class Terminal:
                     await pizza.prepare()
                     await pizza.bake()
                     await pizza.cut()
+
                 async def doing_order():
                     pizzas = order.order_list
                     tasks = [asyncio.create_task(preparing_pizza(pizza)) for pizza in pizzas]
+                    print(pizzas)
                     await asyncio.gather(*tasks)
-
 
                 asyncio.run(doing_order())
                 print('Your order is ready!')
@@ -370,15 +372,16 @@ if __name__ == '__main__':
     terminal = Terminal()
     # ВТОРОЙ ТЕРМИНАЛ - вторичный поток
     terminal1 = Thread(target=terminal.start_work())
-#    terminal2 = Thread(target=terminal.start_work())
+    #    terminal2 = Thread(target=terminal.start_work())
     terminal1.start()
-#    terminal2.start()
+    #    terminal2.start()
     terminal1.join()
-#    terminal2.join()
+    #    terminal2.join()
 
     orders = session.execute(orders_table.select()).fetchall()
     for order in orders:
-        print(f'name: {order.name}, price: {order.price}, order_contained: {order.order_description}, date: {order.date}')
+        print(
+            f'name: {order.name}, price: {order.price}, order_contained: {order.order_description}, date: {order.date}')
 
     session.close()
 

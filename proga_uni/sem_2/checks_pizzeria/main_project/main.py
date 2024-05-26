@@ -28,16 +28,15 @@ class Terminal:
         for detail in order_details:
             action = detail['action']
             size = detail['size']
-            ingredients_to_change = detail['ingredients']
+
 
             name_pizza = f'{action}_{len(order.order_list) + 1}_' + size
             pizza = self.create_pizza(action, name_pizza, size)
 
-            if ingredients_to_change:
-                self.change_ingredients(pizza, ingredients_to_change)
-            print(pizza)
+            pizza._products = detail['ingredients']
+            '''if ingredients_to_change:
+                self.change_ingredients(pizza, ingredients_to_change)'''
             order.order_list.append(pizza)
-            print(order.order_list)
 
         if len(order.order_list) != 0:
 
@@ -68,18 +67,7 @@ class Terminal:
         else:
             return PizzaSeafood(name_pizza, size)
 
-    def change_ingredients(self, pizza, ingredients_to_change):
-        now_ingredients = np.copy(pizza.ingredients)
-        new_ingredients = pizza.ingredients
 
-        try:
-            for ingredient in ingredients_to_change:
-                if ingredient in now_ingredients:
-                    new_ingredients.remove(ingredient)
-            pizza.ingredients = new_ingredients
-        except Exception as e:
-            pizza.ingredients = now_ingredients
-            print(e)
 
     async def prepare_order(self, pizzas):
         async def prepare_pizza(pizza):
@@ -87,7 +75,6 @@ class Terminal:
             await pizza.bake()
             await pizza.cut()
         tasks = [asyncio.create_task(prepare_pizza(pizza)) for pizza in pizzas]
-        print(pizzas)
         await asyncio.gather(*tasks)
 
 
