@@ -10,8 +10,6 @@ class Order:
     def name(self):
         return self._name
 
-
-
     def get_price(self):
         final_price = 0
         for pizza in self.order_list:
@@ -30,5 +28,3 @@ class Order:
         pizzas = [str(pizza) for pizza in self.order_list]
         print(f"Your order contains: {','.join(pizzas)} and final price is {final_price}")
         return final_price
-
-

@@ -1,6 +1,8 @@
 import asyncio
 from abc import ABC, abstractmethod
 from exceptions import CheeseException, DoughException
+
+
 # возможно сюда нужно будет импортировать исключения
 
 class Pizza(ABC):
@@ -108,9 +110,6 @@ class PizzaPepperoni(Pizza, PackingDeliveryMixin):
         await asyncio.sleep(1)
         print(f'{self._name} is baked.')
 
-    def __repr__(self):
-        return "PizzaPepperoni"
-
 
 class PizzaBarbeque(Pizza, PackingDeliveryMixin):
     def __init__(self, name='Barbeque', size='', dough='yeast-free', sauce='tomato',
@@ -128,9 +127,6 @@ class PizzaBarbeque(Pizza, PackingDeliveryMixin):
         await asyncio.sleep(2)
         print(f'{self._name} is baked.')
 
-    def __repr__(self):
-        return "PizzaBarbeque"
-
 
 class PizzaSeafood(Pizza):
     def __init__(self, name='Seafood', size='', dough='whole-grain', sauce='cream',
@@ -146,8 +142,3 @@ class PizzaSeafood(Pizza):
         print(f'{self._name} will be baked in 30 minutes.')
         await asyncio.sleep(3)
         print(f'{self._name} is baked.')
-
-    def __repr__(self):
-        return "PizzaSeafood"
-
-# repr можно убрать если я починю названия через str материнского класса

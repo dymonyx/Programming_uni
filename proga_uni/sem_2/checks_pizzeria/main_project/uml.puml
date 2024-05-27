@@ -1,0 +1,107 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class PizzaApp {
+    -root: Tk
+    -on_order_callback: function
+    -order_details: list
+    +create_widgets(): void
+    +create_menu(): void
+    +select_pizza_pepperoni(): void
+    +select_pizza_barbeque(): void
+    +select_pizza_seafood(): void
+    +select_size_30(): void
+    +select_size_35(): void
+    +select_size_40(): void
+    +change_ingredients(): void
+    +add_pizza(): void
+    +show_order(): void
+    +finalize_order(): void
+    +order_ready_message(): void
+    +show_information(): void
+    +finish(): void
+    +temporary_decision(): void
+    +clearing(): void
+    +show_waiting_list(): void
+    +restart(): void
+}
+
+class Order {
+    -name: str
+    -order_list: list
+    +__init__(name: str, order_list: list=[])
+    +name: str
+    +order_list: list
+    +order_list(new_order_list: list): void
+    +get_price(): int
+}
+
+class Pizza {
+    -name: str
+    -size: str
+    -dough: str
+    -sauce: str
+    -ingredients: list
+    +__init__(name: str='', size: str='', dough: str='', sauce: str='', ingredients: list=['cheese'])
+    +name: str
+    +size: str
+    +size(new_size: str): void
+    +dough: str
+    +dough(new_dough: str): void
+    +sauce: str
+    +sauce(new_sauce: str): void
+    +ingredients: list
+    +ingredients(new_ingredients: list): void
+    +prepare(): void
+    +bake(): void
+    +cut(): void
+}
+
+Pizza <|-- PizzaPepperoni
+Pizza <|-- PizzaBarbeque
+Pizza <|-- PizzaSeafood
+
+class PizzaPepperoni {
+    +__init__(name: str='Pepperoni', size: str='', dough: str='yeast', sauce: str='tomato', products: list=['cheese', 'pepperoni', 'italian_herbs'])
+    +bake(): void
+}
+
+class PizzaBarbeque {
+    +__init__(name: str='Barbeque', size: str='', dough: str='yeast-free', sauce: str='tomato', products: list=['cheese', 'sauce barbeque', 'bacon', 'tomatoes', 'eggplant', 'champignons', 'sweet onions', 'pickles', 'parsley'])
+    +bake(): void
+}
+
+class PizzaSeafood {
+    +__init__(name: str='Seafood', size: str='', dough: str='whole-grain', sauce: str='cream', products: list=['cheese', 'calamari', 'shrimp', 'mussels', 'octopus', 'tomatoes', 'red pepper'])
+    +bake(): void
+}
+
+class Terminal {
+    -menu: list
+    +__init__(menu: list=['PizzaPepperoni', 'PizzaBarbeque', 'PizzaSeafood'])
+    +get_menu(): str
+    +clearing_order_list(): void
+    +start_work(name: str, order_details: list): void
+    +create_pizza(action: str, name_pizza: str, size: str): Pizza
+    +change_ingredients(pizza: Pizza, ingredients_to_change: list): void
+    +prepare_order(pizzas: list): void
+}
+
+class CheeseException {}
+class DoughException {}
+
+class Orders {
+    +id: int
+    +name: str
+    +price: str
+    +order_description: str
+    +date: str
+}
+
+PizzaApp --> Terminal : uses
+PizzaApp --> Order : manages
+Order --> Pizza : contains
+Pizza --> CheeseException : raises
+Pizza --> DoughException : raises
+Orders --> Order : logs
+@enduml

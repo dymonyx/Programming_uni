@@ -4,6 +4,7 @@ from sqlalchemy.orm import declarative_base
 engine = create_engine('sqlite:///pizzeriaDBase.db')
 Base = declarative_base()
 
+
 class Orders(Base):
     __tablename__ = 'orders'
     id = Column(Integer, primary_key=True)
@@ -17,5 +18,6 @@ class Orders(Base):
         self.price = price
         self.order_description = order_description
         self.date = date
+
 
 Base.metadata.create_all(engine)

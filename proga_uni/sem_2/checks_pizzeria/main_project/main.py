@@ -9,8 +9,8 @@ from pizzas import PizzaPepperoni, PizzaBarbeque, PizzaSeafood
 from tkinter import Tk
 from threading import Thread
 
-Session = sessionmaker(bind=engine)
-session = Session()
+
+
 
 class Terminal:
     def __init__(self, menu=['PizzaPepperoni', 'PizzaBarbeque', 'PizzaSeafood']):
@@ -19,8 +19,6 @@ class Terminal:
     def get_menu(self):
         return ','.join(self._menu)
 
-    def clearing_order_list(self):
-        pass
 
     def start_work(self, name, order_details):
         order = Order(name)
@@ -28,7 +26,6 @@ class Terminal:
         for detail in order_details:
             action = detail['action']
             size = detail['size']
-
 
             name_pizza = f'{action}_{len(order.order_list) + 1}_' + size
             pizza = self.create_pizza(action, name_pizza, size)
@@ -50,14 +47,13 @@ class Terminal:
                 order_description=', '.join(pizzas),
                 date=current_datetime_str
             )
-            session = Session()
+            # session = Session()
             session.add(new_order)  # Добавляем объект Order в сессию
             session.commit()  # Фиксируем изменения в базе данных
             session.close()
             asyncio.run(self.prepare_order(order.order_list))
         else:
             print('Order is empty.')
-
 
     def create_pizza(self, action, name_pizza, size):
         if action == "Pepperoni":
@@ -67,17 +63,14 @@ class Terminal:
         else:
             return PizzaSeafood(name_pizza, size)
 
-
-
     async def prepare_order(self, pizzas):
         async def prepare_pizza(pizza):
             await pizza.prepare()
             await pizza.bake()
             await pizza.cut()
+
         tasks = [asyncio.create_task(prepare_pizza(pizza)) for pizza in pizzas]
         await asyncio.gather(*tasks)
-
-
 
 
 def on_order(name, order_details):
@@ -86,16 +79,13 @@ def on_order(name, order_details):
     terminal_thread.start()
     terminal_thread.join()
 
+
 if __name__ == '__main__':
-    # Setup database session
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    # Launch GUI
     tk = Tk()
     app = PizzaApp(tk, on_order)
     tk.mainloop()
-
-    # Display all orders
 
     session.close()

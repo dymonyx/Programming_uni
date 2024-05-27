@@ -17,9 +17,3 @@ class NotExistProduct(Exception):
 class OrderIsNotEmpty(Exception):
     pass
 
-
-def counting(order_list):
-    if len(order_list) != 0:
-        raise OrderIsNotEmpty
-    else:
-        return

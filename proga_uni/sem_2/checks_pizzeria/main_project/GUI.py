@@ -2,15 +2,18 @@ import subprocess
 from tkinter import *
 from tkinter import ttk, messagebox
 
+
 class PizzaButton(ttk.Radiobutton):
     def __init__(self, master, text, command, variable, row, column, columnspan=1):
         super().__init__(master, text=text, value=text, variable=variable, command=command)
         self.grid(row=row, column=column, columnspan=columnspan)
 
+
 class SizeButton(ttk.Radiobutton):
     def __init__(self, master, text, command, variable, row, column, columnspan=1):
         super().__init__(master, text=text, value=text, variable=variable, command=command)
         self.grid(row=row, column=column, columnspan=columnspan)
+
 
 class PizzaApp:
     def __init__(self, root, on_order_callback):
@@ -93,7 +96,6 @@ class PizzaApp:
             messagebox.showerror("Error", "No pizzas in the order.")
             return
 
-        # Создаем новое окно для изменения ингредиентов выбранной пиццы
         ingredients_window = Toplevel(self.root)
         ingredients_window.title("Show Ingredients")
         ingredients_window.geometry("400x300")
@@ -102,7 +104,7 @@ class PizzaApp:
         pizza_listbox.pack(fill=BOTH, expand=True)
 
         for idx, detail in enumerate(self.order_details):
-            pizza_listbox.insert(END, f"{idx+1}. {detail['action']} - {detail['size']}")
+            pizza_listbox.insert(END, f"{idx + 1}. {detail['action']} - {detail['size']}")
 
         def select_pizza(event):
             try:
@@ -111,14 +113,12 @@ class PizzaApp:
             except  IndexError:
                 pass
 
-            # Удаляем предыдущее окно с ингредиентами
             try:
                 for widget in ingredients_window.winfo_children():
                     widget.destroy()
             except:
                 pass
 
-            # Создаем новое окно с ингредиентами для выбранной пиццы
             ingredients_window = Toplevel(self.root)
             ingredients_window.title("Change Ingredients")
             ingredients_window.geometry("400x300")
@@ -134,6 +134,7 @@ class PizzaApp:
                     ingredients_listbox.insert(END, ingredient)
             except UnboundLocalError:
                 pass
+
         pizza_listbox.bind('<<ListboxSelect>>', select_pizza)
 
     def add_pizza(self):
@@ -147,8 +148,9 @@ class PizzaApp:
         if self.pizza_var.get() in "Pepperoni":
             ingredients_to_change = ['cheese', 'pepperoni', 'italian_herbs']
         elif self.pizza_var.get() in "Barbeque":
-            ingredients_to_change = ['cheese', 'sauce barbeque', 'bacon', 'tomatoes', 'eggplant', 'champignons', 'sweet onions',
-                           'pickles', 'parsley']
+            ingredients_to_change = ['cheese', 'sauce barbeque', 'bacon', 'tomatoes', 'eggplant', 'champignons',
+                                     'sweet onions',
+                                     'pickles', 'parsley']
         else:
             ingredients_to_change = ['cheese', 'calamari', 'shrimp', 'mussels', 'octopus', 'tomatoes', 'red pepper']
 
@@ -172,13 +174,12 @@ class PizzaApp:
         messagebox.showinfo("Order Summary", order_summary)
 
     def finalize_order(self):
-        name = self.name_entry.get()
+        name = self.name_entry.get()[:30]
         if not self.order_details:
             messagebox.showerror("Error", "No pizzas in the order.")
             return
 
         if messagebox.askyesno("Confirm", "Do you confirm your order?"):
-            # добавить тут окно где будет выводиться инфа о приготовлении или просто выкидывать инфу в меню
             self.on_order_callback(name, self.order_details)
             self.order_ready_message()
         else:
@@ -188,6 +189,7 @@ class PizzaApp:
     def order_ready_message(self):
         messagebox.showinfo("Order", "Your order is ready!")
         self.root.quit()  # Закрытие приложения
+
     def show_information(self):
         information = ["Author - Agonek", "Language - Python", "Day of release - 27/04/24"]
         str_info = "\n".join(information)
@@ -238,5 +240,3 @@ class PizzaApp:
         # Запуск обновления текста
         update_text()
 '''
-
-
