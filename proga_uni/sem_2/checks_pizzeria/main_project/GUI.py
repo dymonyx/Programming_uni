@@ -161,7 +161,7 @@ class PizzaApp:
         })
         messagebox.showinfo("Success", f"Added {self.pizza_var.get()} of size {self.size_var.get()}")
 
-        # Reset selection
+
         self.pizza_var.set("")
         self.size_var.set("")
 
@@ -184,14 +184,14 @@ class PizzaApp:
             self.order_ready_message()
         else:
             messagebox.showinfo("Order", "Order cancelled.")
-            self.root.quit()  # Закрытие приложения
+            self.root.quit()
 
     def order_ready_message(self):
         messagebox.showinfo("Order", "Your order is ready!")
-        self.root.quit()  # Закрытие приложения
+        self.root.quit()
 
     def show_information(self):
-        information = ["Author - Agonek", "Language - Python", "Day of release - 27/04/24"]
+        information = ["Author - Agonek", "Language - Python", "Day of release - 29/05/24"]
         str_info = "\n".join(information)
         messagebox.showinfo("Information", str_info)
 

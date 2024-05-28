@@ -1,8 +1,7 @@
 import asyncio
 from datetime import datetime
 from database_ORM import engine, Orders
-import numpy as np
-from GUI import PizzaApp  # Импортируем функцию для запуска GUI
+from GUI import PizzaApp
 from sqlalchemy.orm import sessionmaker
 from order import Order
 from pizzas import PizzaPepperoni, PizzaBarbeque, PizzaSeafood
@@ -88,4 +87,4 @@ if __name__ == '__main__':
     app = PizzaApp(tk, on_order)
     tk.mainloop()
 
-    session.close()
+    # session.close()
