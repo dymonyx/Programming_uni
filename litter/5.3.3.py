@@ -20,3 +20,4 @@ for i in itertools.permutations('123456'):
         a.append(s)
 
 print(len(a), a[-5:])
+# проверка связи
